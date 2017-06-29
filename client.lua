@@ -1,6 +1,4 @@
 ﻿local ActionCasinoMarker = false
-addEvent("ToolTip", true)
-
 
 function onClientColShapeHit(thePlayer)
 	if(thePlayer == getLocalPlayer()) then
