@@ -3,7 +3,7 @@
 function onClientColShapeHit(thePlayer)
 	if(thePlayer == getLocalPlayer()) then
 		if(getElementData(source, "Casino")) then
-			triggerEvent("ToolTip", localPlayer, "Однорукий бандит $100\nНажми Enter чтобы сыграть")
+			triggerEvent("ToolTip", localPlayer, "Однорукий бандит #457C3B$100#FFFFFF\nНажми Enter чтобы сыграть")
 			bindKey("enter", "down", PlayCasino) 
 			ActionCasinoMarker = source
 		end
