@@ -148,16 +148,9 @@ local CasinoGame = {
 			["8"] = {
 				[1] = {false, 2243.71, 1589.37, 1006.17, 0,0,180, 1, 0}, 
 			}, 
-			
-			
-			
 		}
 	}
 }
-
-
-
-
 
 local RouletteColor = {
 	["0"] = "green", 
@@ -916,6 +909,8 @@ function getColorRoulette(num)
 	return num
 end
 
+
+
 local PlayerRoulette = {} -- [thePlayer] = {{casino}, position}
 function RotateRoulette(dat, times)
 	local casino, casinogame, game = dat[1], dat[2], dat[3]
@@ -982,7 +977,7 @@ function PlayCasino(thePlayer, dat)
 				CasinoGame[casino][casinogame][game][1][6], 
 				CasinoGame[casino][casinogame][game][1][7], 
 				4, -1, 2.5)
-				triggerClientEvent(thePlayer, "RoulettePlay", thePlayer, {x,y,z, CasinoGame[casino][casinogame][game][1][2], CasinoGame[casino][casinogame][game][1][3], CasinoGame[casino][casinogame][game][1][4]-2})
+				triggerClientEvent(thePlayer, "RoulettePlay", thePlayer, {x,y,z, CasinoGame[casino][casinogame][game][1][2], CasinoGame[casino][casinogame][game][1][3], CasinoGame[casino][casinogame][game][1][4]-2}, dat[4])
 				x,y,z = GetRoulettePos({casino, casinogame, game}, RouletteMatrix[15][5])
 				triggerClientEvent(thePlayer, "SetRoulettePos", thePlayer, x,y,z, CasinoGame[casino][casinogame][game][1][8])
 			end
@@ -1045,30 +1040,62 @@ function GetNextMatrixPos(dat, x,y)
 end
 
 
-local randChk = {1916, 1905, 1906, 1909, 1934}
+local ChkCost = {
+	[1916] = 100, 
+	[1905] = 1000, 
+	[1906] = 10000, 
+	[1909] = 100000, 
+}
+
+
+
+
+function GetPlayerTotalWager(thePlayer)
+	local total = 0
+	for casino, data in pairs(CasinoGame[PlayerRoulette[thePlayer][1][1]][PlayerRoulette[thePlayer][1][2]][PlayerRoulette[thePlayer][1][3]]["push"]) do
+		for _, arr in pairs(data) do
+			if(arr[2] == getPlayerName(thePlayer)) then
+				total = total+ChkCost[getElementModel(arr[1])]
+			end
+		end
+	end
+	return total
+end
+
+
+function GetPlayerPayout(thePlayer)
+	return 0
+end
+
+
 function RouletteControl(thePlayer, control)
 	local dat = PlayerRoulette[thePlayer][1]
 	local casino, casinogame, game = dat[1], dat[2], dat[3]
-
 	
 	if(control == "up") then control = GetNextMatrixPos(PlayerRoulette[thePlayer][2], -1,0)
 	elseif(control == "down") then control = GetNextMatrixPos(PlayerRoulette[thePlayer][2], 1,0)
 	elseif(control == "left") then control = GetNextMatrixPos(PlayerRoulette[thePlayer][2], 0,-1)
 	elseif(control == "right") then control = GetNextMatrixPos(PlayerRoulette[thePlayer][2], 0,1)
 	elseif(control == "push") then 
-		local pushnumber = RouletteMatrix[PlayerRoulette[thePlayer][2][1]][PlayerRoulette[thePlayer][2][2]]
-		if(not CasinoGame[casino][casinogame][game]["push"][pushnumber]) then CasinoGame[casino][casinogame][game]["push"][pushnumber] = {} end
-		
-		local model = randChk[math.random(#randChk)]
-		local rx = 0
-		if(model == 1934) then
-			rx=rx+90
+		if(GetPlayerTotalWager(thePlayer) < dat[4]) then
+			local pushnumber = RouletteMatrix[PlayerRoulette[thePlayer][2][1]][PlayerRoulette[thePlayer][2][2]]
+			if(not CasinoGame[casino][casinogame][game]["push"][pushnumber]) then CasinoGame[casino][casinogame][game]["push"][pushnumber] = {} end
+			
+			local model = false
+			for _model, cost in pairs(ChkCost) do
+				if(cost == dat[4]/100) then
+					model = _model
+				end
+			end
+			local rx = 0
+			local x,y,z = GetRoulettePos({casino, casinogame, game}, pushnumber)
+			CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]+1] = {createObject(model, x,y,z+(0.003*#CasinoGame[casino][casinogame][game]["push"][pushnumber]), rx, 0, 0), getPlayerName(thePlayer)}
+			setElementInterior(CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]][1], CasinoGame[casino][casinogame][game][1][8])
+			triggerClientEvent(thePlayer, "SetRouletteWager", thePlayer, GetPlayerTotalWager(thePlayer), GetPlayerPayout(thePlayer))
+			return true
+		else
+			return false
 		end
-		local x,y,z = GetRoulettePos({casino, casinogame, game}, pushnumber)
-		CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]+1] = {createObject(model, x,y,z+(0.003*#CasinoGame[casino][casinogame][game]["push"][pushnumber]), rx, 0, 0), getPlayerName(thePlayer)}
-		setElementInterior(CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]][1], CasinoGame[casino][casinogame][game][1][8])
-
-		return true
 	elseif(control == "rotate") then 
 		local times = math.random(200,500)
 		local ro = RotateRoulette({casino, casinogame, game}, times)
@@ -1083,14 +1110,15 @@ function RouletteControl(thePlayer, control)
 			local color = getColorRoulette(ro)
 			for thePlayer,_ in pairs(PlayerList) do
 				triggerClientEvent(getPlayerFromName(thePlayer), "RouletteTick", getPlayerFromName(thePlayer), ro, color)
+				triggerClientEvent(getPlayerFromName(thePlayer), "SetRouletteWager", getPlayerFromName(thePlayer), 0, 0)
 			end
-		
+
 			for number, dat in pairs(CasinoGame[casino][casinogame][game]["push"]) do
 				for i, obj in pairs(dat) do
 					if(tostring(ro) == number) then
 						outputChatBox("Ты выиграл!")
 					elseif(number == "black" or number == "red") then
-						if(color == number) then
+						if(RouletteColor[tostring(ro)] == number) then
 							outputChatBox("Ты выиграл!")
 						end
 					elseif(number == "1to18") then
@@ -1216,12 +1244,18 @@ function GetRoulettePos(dat, pos)
 end
 
 
+
+
+local RandomRoulette = {10000, 100000, 1000000, 10000000}
+local RandomSlot = {100, 250, 500, 1000}
+
+
 for CasinoName, data in pairs(CasinoGame) do
 	for Game, datas in pairs(data) do
 		if(Game == "SLOT") then
 			for name, obj in pairs(datas) do
 				local col = createColSphere(obj[2][3], obj[2][4], obj[2][5], 1.2)
-				setElementData(col, "Casino", toJSON({CasinoName, Game, name}))
+				setElementData(col, "Casino", toJSON({CasinoName, Game, name, RandomSlot[math.random(#RandomSlot)]}))
 				
 				CasinoGame[CasinoName][Game][name][2][1] = createObject(obj[2][2], obj[2][3], obj[2][4], obj[2][5], obj[2][6], obj[2][7], obj[2][8])
 				setElementInterior(CasinoGame[CasinoName][Game][name][2][1], obj[2][9])
@@ -1246,7 +1280,7 @@ for CasinoName, data in pairs(CasinoGame) do
 				
 				local x,y,z = getPointInFrontOfPoint(obj[1][2], obj[1][3], obj[1][4], obj[1][7], 1.2)
 				local col = createColSphere(x,y,z, 2.8)
-				setElementData(col, "Casino", toJSON({CasinoName, Game, name}))
+				setElementData(col, "Casino", toJSON({CasinoName, Game, name, RandomRoulette[math.random(#RandomRoulette)]}))
 			end
 		end
 	end
