@@ -1087,12 +1087,16 @@ function RouletteControl(thePlayer, control)
 					model = _model
 				end
 			end
-			local rx = 0
-			local x,y,z = GetRoulettePos({casino, casinogame, game}, pushnumber)
-			CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]+1] = {createObject(model, x,y,z+(0.003*#CasinoGame[casino][casinogame][game]["push"][pushnumber]), rx, 0, 0), getPlayerName(thePlayer)}
-			setElementInterior(CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]][1], CasinoGame[casino][casinogame][game][1][8])
-			triggerClientEvent(thePlayer, "SetRouletteWager", thePlayer, GetPlayerTotalWager(thePlayer), GetPlayerPayout(thePlayer))
-			return true
+			
+			if(triggerEvent("AddPlayerMoney", thePlayer, thePlayer, -(dat[4]/100))) then
+				local x,y,z = GetRoulettePos({casino, casinogame, game}, pushnumber)
+				CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]+1] = {createObject(model, x,y,z+(0.003*#CasinoGame[casino][casinogame][game]["push"][pushnumber]), 0, 0, 0), getPlayerName(thePlayer)}
+				setElementInterior(CasinoGame[casino][casinogame][game]["push"][pushnumber][#CasinoGame[casino][casinogame][game]["push"][pushnumber]][1], CasinoGame[casino][casinogame][game][1][8])
+				triggerClientEvent(thePlayer, "SetRouletteWager", thePlayer, GetPlayerTotalWager(thePlayer), GetPlayerPayout(thePlayer))
+				return true
+			else
+				return false
+			end
 		else
 			return false
 		end
@@ -1104,67 +1108,67 @@ function RouletteControl(thePlayer, control)
 			local PlayerList = {}
 			for number, data in pairs(CasinoGame[casino][casinogame][game]["push"]) do
 				for _, arr in pairs(data) do
-					PlayerList[arr[2]] = true
+					PlayerList[arr[2]] = 0
 				end
 			end
 			local color = getColorRoulette(ro)
 			for thePlayer,_ in pairs(PlayerList) do
 				triggerClientEvent(getPlayerFromName(thePlayer), "RouletteTick", getPlayerFromName(thePlayer), ro, color)
-				triggerClientEvent(getPlayerFromName(thePlayer), "SetRouletteWager", getPlayerFromName(thePlayer), 0, 0)
 			end
 
+			
 			for number, dat in pairs(CasinoGame[casino][casinogame][game]["push"]) do
 				for i, obj in pairs(dat) do
 					if(tostring(ro) == number) then
-						outputChatBox("Ты выиграл!")
+						PlayerList[obj[2]] = PlayerList[obj[2]]+20
 					elseif(number == "black" or number == "red") then
 						if(RouletteColor[tostring(ro)] == number) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+1.5
 						end
 					elseif(number == "1to18") then
 						if(ro >= 1 and ro <= 18) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(number == "19to36") then
 						if(ro >= 19 and ro <= 36) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(number == "odd") then
 						if math.fmod(ro,2) ~= 0 then
-							outputChatBox("Ты выиграл! нечетные")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+1.5
 						end
 					elseif(number == "even") then
 						if math.fmod(ro,2) == 0 then
-							outputChatBox("Ты выиграл! четные")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+1.5
 						end
 					elseif(number == "1st12") then
 						if(ro >= 1 and ro <= 12) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(number == "2nd12") then
 						if(ro >= 13 and ro <= 24) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(number == "3rd12") then
 						if(ro >= 25 and ro <= 36) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(number == "3to11") then
 						if(ro == 1 or ro == 4 or ro == 7 or ro == 10 or ro == 13 or ro == 16 or ro == 19 or ro == 22 or ro == 25 or ro == 28 or ro == 31 or ro == 34) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(number == "3to12") then
 						if(ro == 2 or ro == 5 or ro == 8 or ro == 11 or ro == 14 or ro == 17 or ro == 20 or ro == 23 or ro == 26 or ro == 29 or ro == 32 or ro == 35) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(number == "3to13") then
 						if(ro == 3 or ro == 6 or ro == 9 or ro == 12 or ro == 15 or ro == 18 or ro == 21 or ro == 24 or ro == 27 or ro == 30 or ro == 33 or ro == 36) then
-							outputChatBox("Ты выиграл!")
+							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
 						end
 					elseif(#string.explode(number, "+") > 1) then
 						for _, num in pairs(string.explode(number, "+")) do
 							if(tostring(ro) == num) then
-								outputChatBox("Ты выиграл!")
+								PlayerList[obj[2]] = PlayerList[obj[2]]+10
 							end
 						end
 					end
@@ -1172,6 +1176,17 @@ function RouletteControl(thePlayer, control)
 					CasinoGame[casino][casinogame][game]["push"][number][i] = nil
 				end
 			end
+			
+			
+			
+			for thePlayer, val in pairs(PlayerList) do
+				triggerClientEvent(getPlayerFromName(thePlayer), "SetRouletteWager", getPlayerFromName(thePlayer), 0, val*(dat[4]/100))
+				if(val > 0) then
+					triggerEvent("AddPlayerMoney", getPlayerFromName(thePlayer), getPlayerFromName(thePlayer), val*(dat[4]/100), "ВЫИГРЫШ")
+				end
+			end
+			
+			
 		end, 1000+(50*(times/10)), 1, thePlayer, ro)
 		return true
 	else return false end

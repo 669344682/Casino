@@ -1,5 +1,5 @@
 <meta>
-	<info name="Casino" version="1.0.1" type="script" author="alexaxel705" description="Original casino from GTA SA"/>
+	<info name="Casino" version="1.0.2" type="script" author="alexaxel705" description="Original casino from GTA SA"/>
 	
 	<script src="server.lua" type="server"/>
 	<script src="client.lua" type="client"/>

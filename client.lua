@@ -123,7 +123,7 @@ addEventHandler("RoulettePlay", getRootElement(), RoulettePlay)
 
 function SetRouletteWager(wager, payout)
 	RouletteInfo[2] = wager
-	RouletteInfo[3] = payout
+	RouletteInfo[3] = RouletteInfo[3]+payout
 end
 addEvent("SetRouletteWager", true)
 addEventHandler("SetRouletteWager", getRootElement(), SetRouletteWager)
