@@ -152,6 +152,9 @@ local CasinoGame = {
 	}
 }
 
+
+
+
 local RouletteColor = {
 	["0"] = "green", 
 	["1"] = "red", 
@@ -946,7 +949,7 @@ function PlayCasino(thePlayer, dat)
 	local casino, casinogame, game = dat[1], dat[2], dat[3]
 	if(casinogame == "SLOT") then
 		if(not isTimer(CasinoGame[casino][casinogame][game]["timer"])) then
-			if(triggerEvent("AddPlayerMoney", thePlayer, thePlayer, -100)) then
+			if(triggerEvent("AddPlayerMoney", thePlayer, thePlayer, -dat[4])) then
 				local MaxCombo = 360/getArrSize(CasinoObjectInfo[CasinoGame[casino][casinogame][game][2][2]])
 				local r1,r2,r3 = math.random(1,MaxCombo), math.random(MaxCombo,MaxCombo*2), math.random(MaxCombo*2,MaxCombo*3)
 				victory = false

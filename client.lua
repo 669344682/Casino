@@ -8,7 +8,6 @@ local RoulTick = {}
 local RouletteInfo = {0, 0, 0} -- {максимальная ставка, текущая}
 
 
-
 function math.round(number, decimals, method)
     decimals = decimals or 0
     local factor = 10 ^ decimals
