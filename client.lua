@@ -1,11 +1,11 @@
 ﻿local screenWidth, screenHeight = guiGetScreenSize()
 local scale = ((screenWidth/1920)+(screenHeight/1080))/2
-
+toggleAllControls(true)
 local ActionCasinoMarker = false
 local RouletteRing = false
 local RouletteLight = false
 local RoulTick = {}
-local RouletteInfo = {0, 0, 0} -- {максимальная ставка, текущая}
+local RouletteInfo = {0, 0, 0}
 
 
 function math.round(number, decimals, method)
@@ -83,7 +83,7 @@ function onClientColShapeHit(thePlayer)
 				bindKey("enter", "down", PlayCasino) 
 				ActionCasinoMarker = source
 			elseif(dat[2] == "Roulette") then
-				triggerEvent("ToolTip", localPlayer, "Максимальная ставка #457C3B$"..dat[4].."#FFFFFF\nНажми Enter чтобы сыграть")
+				triggerEvent("ToolTip", localPlayer, Text("Max Wager").." #457C3B$"..dat[4].."#FFFFFF\nНажми Enter чтобы сыграть")
 				bindKey("enter", "down", PlayCasino) 
 				ActionCasinoMarker = source
 			end
@@ -150,10 +150,10 @@ function DrawRoulette()
 	end
 	
 	dxDrawRectangle(75*scale, screenHeight-(375*scale), 350*scale, 300*scale, tocolor(0,0,0,200))	
-	dxDrawBorderedText("#FBF5FAСтавка", 100*scale, screenHeight-(405*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*4, "default-bold", "left", "top", nil, nil, nil, true)
-	dxDrawBorderedText("#BCD6FEМаксимальная ставка#F9EDE0\n$"..RouletteInfo[1], 90*scale, screenHeight-(340*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*2, "default-bold", "left", "top", nil, nil, nil, true)
-	dxDrawBorderedText("#BCD6FEТекущая ставка#F9EDE0\n$"..RouletteInfo[2], 90*scale, screenHeight-(250*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*2, "default-bold", "left", "top", nil, nil, nil, true)
-	dxDrawBorderedText("#BCD6FEВыплата#F9EDE0\n$"..RouletteInfo[3], 90*scale, screenHeight-(160*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*2, "default-bold", "left", "top", nil, nil, nil, true)
+	dxDrawBorderedText("#FBF5FA"..Text("Wager"), 100*scale, screenHeight-(405*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*4, "default-bold", "left", "top", nil, nil, nil, true)
+	dxDrawBorderedText("#BCD6FE"..Text("Max Wager").."#F9EDE0\n$"..RouletteInfo[1], 90*scale, screenHeight-(340*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*2, "default-bold", "left", "top", nil, nil, nil, true)
+	dxDrawBorderedText("#BCD6FE"..Text("Total Wager").."#F9EDE0\n$"..RouletteInfo[2], 90*scale, screenHeight-(250*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*2, "default-bold", "left", "top", nil, nil, nil, true)
+	dxDrawBorderedText("#BCD6FE"..Text("Payout").."#F9EDE0\n$"..RouletteInfo[3], 90*scale, screenHeight-(160*scale), screenWidth, screenHeight, tocolor(255, 255, 255, 255), scale*2, "default-bold", "left", "top", nil, nil, nil, true)
 
 end
 
@@ -207,8 +207,43 @@ addEvent("SetRoulettePos", true)
 addEventHandler("SetRoulettePos", getRootElement(), SetRoulettePos)
 
 
-toggleAllControls(true)  -- убрать потом
 
 
+local LangCode = getLocalization()["code"]
+local Lang = {
+	["ru"] = "En_ru.po"
+}
+local LangArr = {}
+if(Lang[LangCode]) then
+	local hFile = fileOpen("po/"..Lang[LangCode], true)
+
+	local ft = fileRead(hFile, 5500)
+	while not fileIsEOF(hFile) do
+		ft = ft .. fileRead(hFile, 5500)
+	end
+	
+	ft = string.gsub(ft, 'msgid ""\n', 'msgid ')
+	ft = string.gsub(ft, 'msgstr ""\n', 'msgstr ')
+	ft = string.gsub(ft, '"\n"', '')
+	LangArr = {}
+	local Lines = split(ft, "\n")
+	for i = 1, #Lines do
+		if(string.sub(Lines[i], 0, 5) == "msgid") then
+			LangArr[string.sub(Lines[i], 8, #Lines[i]-1)] = string.sub(Lines[i+1], 9, #Lines[i+1]-1)
+		end
+	end
+	fileClose(hFile)
+end
 
 
+function Text(text, repl)
+	if(LangArr[text]) then
+		text = LangArr[text]
+	end
+	if(repl) then
+		for i, dat in pairs(repl) do
+			text = string.gsub(text, dat[1], dat[2])
+		end
+	end
+	return text
+end
