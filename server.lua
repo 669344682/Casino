@@ -1130,11 +1130,11 @@ function RouletteControl(thePlayer, control)
 						end
 					elseif(number == "1to18") then
 						if(ro >= 1 and ro <= 18) then
-							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
+							PlayerList[obj[2]] = PlayerList[obj[2]]+1.5
 						end
 					elseif(number == "19to36") then
 						if(ro >= 19 and ro <= 36) then
-							PlayerList[obj[2]] = PlayerList[obj[2]]+2.5
+							PlayerList[obj[2]] = PlayerList[obj[2]]+1.5
 						end
 					elseif(number == "odd") then
 						if math.fmod(ro,2) ~= 0 then
